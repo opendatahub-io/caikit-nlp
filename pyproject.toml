@@ -14,9 +14,12 @@ classifiers=[
     "License :: OSI Approved :: Apache Software License"
 ]
 dependencies = [
-    "caikit[runtime-grpc,runtime-http]>=0.25.0,<0.26.0",
+    "caikit[runtime-grpc,runtime-http]>=0.26.17,<0.27.0",
     "caikit-tgis-backend>=0.1.27,<0.2.0",
     # TODO: loosen dependencies
+    "grpcio>=1.62.2", # explicitly pin grpc dependencies to a recent version to avoid pip backtracking
+    "grpcio-reflection>=1.62.2",
+    "grpcio-health-checking>=1.62.2",
     "accelerate>=0.22.0",
     "datasets>=2.4.0",
     "huggingface-hub",
@@ -24,15 +27,12 @@ dependencies = [
     "pandas>=1.5.0",
     "scikit-learn>=1.1",
     "scipy>=1.8.1",
+    "sentence-transformers>=2.3.1,<2.4.0",
     "tokenizers>=0.13.3",
-    "torch>=2.0.1",
+    "torch>=2.0.1,<2.3.0",
     "tqdm>=4.65.0",
     "transformers>=4.32.0",
-    # GK-AUG-25-2023 NOTE: mpt branch on Mayank's fork was merged to peft main on Aug 24 and it got deleted
-    # which broke caikit-nlp build. peft hasn't released newer version yet, so to get
-    # the build fix, we pulling peft from main branch commit. In future, we will pull PEFT from
-    # pypi
-    "peft@git+https://github.com/huggingface/peft.git@8c17d556a8fe9522e10d73d7bd3fad46a6ecae14"
+    "peft==0.6.0",
 ]
 
 [tool.setuptools.packages.find]

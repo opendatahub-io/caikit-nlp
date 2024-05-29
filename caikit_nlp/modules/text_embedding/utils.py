@@ -12,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Publish
 
-on:
-  release:
-    types: [published]
+def env_val_to_bool(val):
+    """Returns the bool value of env var"""
+    if val is None:
+        return False
+    if isinstance(val, bool):
+        return val
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v3
-      - name: Build and check package
-        run: |
-          pip install tox
-          tox -e build,twinecheck
-      - name: Upload package
-        if: github.event_name == 'release'
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
+    # For testing env vars for values that mean false (else True!)
+    return str(val).lower().strip() not in ("no", "n", "false", "0", "f", "off", "")
+
+
+def env_val_to_int(val, default):
+    """Returns the integer value of env var or default value if None or invalid integer"""
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return default
