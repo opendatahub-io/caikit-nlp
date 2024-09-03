@@ -5,3 +5,4 @@
 !pyproject.toml
 !tox.ini
 !.git
+!scripts/wait-modelcar.sh

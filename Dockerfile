@@ -34,6 +34,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY LICENSE /opt/caikit/
 COPY README.md /opt/caikit/
+COPY --chown=0:0 --chmod=554 scripts/wait-modelcar.sh /opt/caikit/
 
 RUN groupadd --system caikit --gid 1001 && \
     adduser --system --uid 1001 --gid 0 --groups caikit \
@@ -48,4 +49,5 @@ ENV RUNTIME_LIBRARY=caikit_nlp
 VOLUME ["/caikit/"]
 WORKDIR /caikit
 
+ENTRYPOINT ["/opt/caikit/wait-modelcar.sh"]
 CMD ["python"]
