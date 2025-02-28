@@ -99,8 +99,7 @@ def render_verbalizer(verbalizer_template: str, source_object) -> str:
             error(
                 "<NLP97715112E>",
                 AttributeError(
-                    "Requested template string '%s' is not a valid property of type",
-                    index_object,
+                    f"Requested template string '{index_object}' is not a valid property of type",
                 ),
             )
         return getattr(source_object, index_object)
