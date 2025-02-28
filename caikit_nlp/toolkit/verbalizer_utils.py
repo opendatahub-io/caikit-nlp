@@ -89,7 +89,10 @@ def render_verbalizer(verbalizer_template: str, source_object) -> str:
             if index_object not in source_object:
                 error(
                     "<NLP97415192E>",
-                    KeyError("Requested template string is not a valid key in dict"),
+                    KeyError(
+                        "Requested template string '%s' is not a valid key in dict",
+                        index_object,
+                    ),
                 )
             return source_object[index_object]
 
@@ -97,7 +100,8 @@ def render_verbalizer(verbalizer_template: str, source_object) -> str:
             error(
                 "<NLP97715112E>",
                 AttributeError(
-                    "Requested template string is not a valid property of type"
+                    "Requested template string '%s' is not a valid property of type",
+                    index_object,
                 ),
             )
         return getattr(source_object, index_object)
