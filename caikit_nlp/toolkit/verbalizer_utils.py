@@ -90,8 +90,7 @@ def render_verbalizer(verbalizer_template: str, source_object) -> str:
                 error(
                     "<NLP97415192E>",
                     KeyError(
-                        "Requested template string '%s' is not a valid key in dict",
-                        index_object,
+                        f"Requested template string '{index_object}' is not a valid key in dict"
                     ),
                 )
             return source_object[index_object]
