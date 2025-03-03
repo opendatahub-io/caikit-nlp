@@ -61,7 +61,7 @@ def render_verbalizer(verbalizer_template: str, source_object) -> str:
                {{output}} with getattr(source_object, "target").
             returns: "Source: machine Target: learning"
 
-    NOTE: This function will throw  KeyError/AttributeError if you try to grab a key or property
+    NOTE: This function will throw ValueError if you try to grab a key or property
     that is invalid.
 
     Args:
@@ -74,7 +74,7 @@ def render_verbalizer(verbalizer_template: str, source_object) -> str:
     """
     is_dict = isinstance(source_object, dict)
 
-    def replace_text(match_obj):
+    def replace_text(match_obj: re.Match):
         captured_groups = match_obj.groups()
         if len(captured_groups) != 1:
             error(
