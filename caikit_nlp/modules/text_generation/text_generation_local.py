@@ -55,6 +55,7 @@ error = error_handler.get(log)
 
 TRAINING_LOSS_LOG_FILENAME = "training_logs.jsonl"
 
+
 # pylint: disable=too-many-lines,too-many-instance-attributes
 @module(
     id="f9181353-4ccf-4572-bd1e-f12bcda26792",
@@ -590,7 +591,11 @@ class TextGeneration(ModuleBase):
             TokenizationResults
                 The token count
         """
-        raise NotImplementedError("Tokenization not implemented for local")
+        error.type_check("<NLP48137045E>", str, text=text)
+        tokenized_output = self.model.tokenizer(text, return_attention_mask=True)
+        return TokenizationResults(
+            token_count=len(tokenized_output["input_ids"]),
+        )
 
     ################################## Private Functions ######################################
 
@@ -635,6 +640,10 @@ class TextGeneration(ModuleBase):
         base_model, training_dataset, training_args, checkpoint_dir
     ) -> None:
         """Utility function to wrap trainer and execute training"""
+
+        # gradient_accumulation_steps seems to be causing hang atleast on CPU training
+        # so we are removing it for now here
+        del training_args["gradient_accumulation_steps"]
 
         trainer = base_model.get_trainer(
             train_dataset=training_dataset, **training_args
