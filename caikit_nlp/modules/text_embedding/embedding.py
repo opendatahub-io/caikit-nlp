@@ -412,9 +412,7 @@ class EmbeddingModule(ModuleBase):
 
     @EmbeddingTasks.taskmethod()
     def run_embeddings(
-        self,
-        texts: List[str],
-        truncate_input_tokens: Optional[int] = 0,
+        self, texts: List[str], truncate_input_tokens: Optional[int] = 0, **kwargs
     ) -> EmbeddingResults:
         """Get embedding vectors for texts.
         Args:
@@ -440,6 +438,7 @@ class EmbeddingModule(ModuleBase):
             texts,
             truncate_input_tokens=truncate_input_tokens,
             return_token_count=True,
+            **kwargs,
         )
         vectors = [Vector1D.from_vector(e) for e in embeddings]
 
@@ -455,6 +454,7 @@ class EmbeddingModule(ModuleBase):
         source_sentence: str,
         sentences: List[str],
         truncate_input_tokens: Optional[int] = 0,
+        **kwargs,
     ) -> SentenceSimilarityResult:
         """Get similarity scores for each of sentences compared to the source_sentence.
         Args:
@@ -476,11 +476,13 @@ class EmbeddingModule(ModuleBase):
             source_sentence,
             truncate_input_tokens=truncate_input_tokens,
             return_token_count=True,
+            **kwargs,
         )
         embeddings, sentences_token_count = self._encode_with_retry(
             sentences,
             truncate_input_tokens=truncate_input_tokens,
             return_token_count=True,
+            **kwargs,
         )
 
         input_token_count = source_token_count + sentences_token_count
@@ -547,6 +549,7 @@ class EmbeddingModule(ModuleBase):
         return_documents: bool = True,
         return_query: bool = True,
         return_text: bool = True,
+        **kwargs,
     ) -> RerankResult:
         """Rerank the documents returning the most relevant top_n in order for this query.
         Args:
@@ -598,6 +601,7 @@ class EmbeddingModule(ModuleBase):
             return_documents=return_documents,
             return_queries=return_query,
             return_text=return_text,
+            **kwargs,
         )
 
         if results.results:
@@ -626,6 +630,7 @@ class EmbeddingModule(ModuleBase):
         return_documents: bool = True,
         return_queries: bool = True,
         return_text: bool = True,
+        **kwargs,
     ) -> RerankResults:
         """Rerank the documents returning the most relevant top_n in order for each of the queries.
         Args:
@@ -690,6 +695,7 @@ class EmbeddingModule(ModuleBase):
             truncate_input_tokens=truncate_input_tokens,
             return_token_count=True,
             convert_to_tensor=True,
+            **kwargs,
         )
         doc_embeddings = normalize(doc_embeddings.to(self.model.device))
 
@@ -698,6 +704,7 @@ class EmbeddingModule(ModuleBase):
             truncate_input_tokens=truncate_input_tokens,
             return_token_count=True,
             convert_to_tensor=True,
+            **kwargs,
         )
         query_embeddings = normalize(query_embeddings.to(self.model.device))
 
@@ -976,6 +983,7 @@ class SentenceTransformerWithTruncate(SentenceTransformer):
         truncate_input_tokens: int,
         texts: List[str],
         implicit_truncation_errors: bool = True,
+        **kwargs,
     ) -> TruncatedTokensTuple:
         """Tokenize with support for truncation handling and returning the token count
         Args:
@@ -1015,7 +1023,7 @@ class SentenceTransformerWithTruncate(SentenceTransformer):
         texts = [str(s).strip() for s in texts]
 
         # Call tokenizer with the same truncation parameters every time
-        tokenized = self._get_tokenized(texts)
+        tokenized = self._get_tokenized(texts, **kwargs)
 
         # Custom truncation and/or error raise if needed
         truncation_needed = self._truncation_needed(tokenized, max_length, texts)
@@ -1023,13 +1031,13 @@ class SentenceTransformerWithTruncate(SentenceTransformer):
             # Truncate texts in place
             _truncate_texts(texts, tokenized, max_length, truncation_needed)
             # Re-tokenize the truncated texts
-            tokenized = self._get_tokenized(texts)
+            tokenized = self._get_tokenized(texts, **kwargs)
             truncation_needed = []  # truncation accomplished
 
         input_token_count = sum_token_count(tokenized)
         return TruncatedTokensTuple(tokenized, input_token_count, truncation_needed)
 
-    def _get_tokenized(self, texts):
+    def _get_tokenized(self, texts, **kwargs):
         """Intentionally always call tokenizer the same way to avoid thread issues.
 
         Use a copy of the tokenizer per-model (self) and per-thread (map by thread ID).
@@ -1038,6 +1046,8 @@ class SentenceTransformerWithTruncate(SentenceTransformer):
         "Already borrowed" errors that come with concurrent threads attempting to use
         the fast tokenizer with different truncation settings.
         """
+
+        padding_strategy = kwargs.pop("padding_strategy", True)
 
         # Keep copies of tokenizer per thread (in each wrapped model instance)
         thread_id = threading.get_ident()
@@ -1056,7 +1066,7 @@ class SentenceTransformerWithTruncate(SentenceTransformer):
             return_length=False,
             return_tensors="pt",
             truncation=True,  # DO NOT CHANGE else "Already borrowed" errors
-            padding=True,  # DO NOT CHANGE else "Already borrowed" errors
+            padding=padding_strategy,  # DO NOT CHANGE else "Already borrowed" errors
             max_length=self.max_seq_length,  # DO NOT CHANGE else "Already borrowed" errors
         )
 
@@ -1077,6 +1087,7 @@ class SentenceTransformerWithTruncate(SentenceTransformer):
         return_token_count: bool = False,
         implicit_truncation_errors: bool = True,
         autocast: bool = False,
+        **kwargs,
     ) -> Union[EmbeddingResultTuple, List[torch.Tensor], np.ndarray, torch.Tensor]:
         """
         Computes sentence embeddings
@@ -1161,6 +1172,7 @@ class SentenceTransformerWithTruncate(SentenceTransformer):
                 truncate_input_tokens,
                 sentences_batch,
                 implicit_truncation_errors=implicit_truncation_errors,
+                **kwargs,
             )
 
             if truncation_needed:  # truncation was needed and was not done/not allowed

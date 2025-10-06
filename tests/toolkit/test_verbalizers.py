@@ -70,12 +70,12 @@ def test_is_invalid_verbalizer():
 def test_invalid_attribute_verbalizer_substitution():
     """Ensure that if we try to render a placeholder that doesn't exist on our DM, we fail."""
     verbalizer_template = "text: {{sadness}}"
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         render_verbalizer(verbalizer_template, SAMPLE_DM)
 
 
 def test_invalid_key_verbalizer_substitution():
     """Ensure that if we try to render a placeholder that doesn't exist on our dict, we fail."""
     verbalizer_template = "text: {{sadness}}"
-    with pytest.raises(KeyError):
+    with pytest.raises(ValueError):
         render_verbalizer(verbalizer_template, SAMPLE_DICT)
